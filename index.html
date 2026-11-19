@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="lowedit">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Instrument+Sans:wght@400;600&family=Space+Mono:wght@400;700&display=swap">
 <style>
-@font-face{font-family:"Lowend Inter";src:url(/inter-light.woff) format("woff");font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:"Lowend Inter";src:url(/font.ttf) format("truetype");font-weight:300;font-style:normal;font-display:swap}
 :root{--a:#fff;--b:#8a8a8a;--ink:#000;--text:#fff;--muted:#8a8a8a;--glass:#0d0d0d;--edge:#242424;--track:#2a2a2a;--thumb:#fff;--onA:#000;--playbg:#fff;--playfg:#000;--field:#000;color-scheme:dark}
 *{box-sizing:border-box;margin:0}
 html,body{min-height:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}html{touch-action:manipulation}
@@ -254,26 +254,57 @@ html.ai-lock body{position:fixed;left:0;right:0;width:100%}
 </style>
 <style>
 [hidden]{display:none!important}
-#feed{display:flex;flex-direction:column;gap:14px;min-height:40vh;padding-bottom:150px}
-.empty{margin:12vh auto 0;text-align:center}.empty h1{font:800 34px "Bricolage Grotesque",sans-serif;letter-spacing:-.03em}
-.step{color:var(--muted);font-size:14px;align-self:flex-start}
-.vid{align-self:flex-start;max-width:min(100%,340px)}.vid video{width:100%;border-radius:18px;background:#000;border:1px solid var(--edge)}
-.vid a{display:inline-block;margin-top:8px;color:var(--text);font-size:14px}
-.comp{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--ink) 30%)}
-.comp>div{max-width:760px;margin:0 auto}
-.box{display:flex;align-items:flex-end;gap:8px;background:var(--glass);border:1px solid var(--edge);border-radius:26px;padding:8px}
-.box textarea{flex:1;background:none;border:0;outline:0;color:var(--text);font:400 16px/1.4 "Instrument Sans",sans-serif;resize:none;max-height:140px;padding:9px 6px}
-.round{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:var(--a);color:var(--onA);font-size:20px;cursor:pointer}.round.g{background:var(--track);color:var(--text)}.round:disabled{opacity:.35}
-#atts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.chip{background:var(--glass);border:1px solid var(--edge);border-radius:12px;padding:5px 10px;font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.row{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-top:8px;text-align:left}.row a{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{position:fixed;left:0;right:0;width:100%}
+#aiApp{top:0;will-change:transform}
+.ai-comp{padding-top:6px}
+.msg.a{white-space:normal}
+.msg.a .txt{white-space:pre-wrap}
+.msg.a .txt b{font-weight:700}
+.msg.a .txt code{font:13.5px ui-monospace,Menlo,Consolas,monospace;background:var(--glass);border:1px solid var(--edge);border-radius:6px;padding:1px 5px}
+.msg.u .show{white-space:pre-wrap}
+.ai-box textarea.ai-in{resize:none;display:block;height:auto;line-height:1.45}
+.ai-box textarea.ai-in::placeholder{color:var(--muted)}
+.ai-send.stop svg{display:none}.ai-send.stop::after{content:"";width:12px;height:12px;border-radius:3px;background:var(--onA)}
+.att .x{display:flex;align-items:center;justify-content:center}
+.att .nb{position:absolute;left:4px;top:4px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#000c;color:#fff;font:700 11px/18px "Instrument Sans",sans-serif;text-align:center}
+.ai-thumbs .att.file .n{max-width:110px}
+a.ai-tag{text-decoration:none;color:var(--muted)}
+.ai-vid{margin-top:10px}
+.ai-vid video{margin-top:0}
 #toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:200;background:var(--glass);border:1px solid var(--edge);border-radius:14px;padding:10px 14px;font-size:14px;max-width:90vw}
+.row{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-top:8px;text-align:left}.row a{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style></head><body>
 <div id="toast" hidden></div>
-<div class="wrap">
-<header><div class="logo">lowedit</div><div style="display:flex;align-items:center;gap:12px"><button class="btn ghost sm langb" id="langBtn">RU</button><button class="av" id="avBtn" aria-label="Profile"></button></div></header>
-<div id="feed"><div class="empty" id="empty"><h1 data-i="emptyH"></h1><p class="hint" data-i="emptyP"></p></div></div>
-<div class="comp"><div><div id="atts"></div><div class="box"><button class="round g" id="plus" data-aria="attach" aria-label="Attach">+</button><input type="file" id="fl" accept="video/*,audio/*,image/*" multiple hidden><textarea id="in" rows="1" data-ph="ph" placeholder="Describe the edit…"></textarea><button class="round" id="send" disabled data-aria="send" aria-label="Send">↑</button></div></div></div>
+
+<div id="drawer" hidden>
+  <div class="scrim" id="drScrim"></div>
+  <div class="panel">
+    <div class="dl-h"><span>lowedit</span><button class="ai-ib" id="drClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <button class="ditem" id="dNew"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg><span data-i="newChat"></span></button>
+    <button class="ditem" id="dProf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span data-i="profile"></span></button>
+    <button class="ditem" id="dLang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg><span id="dLangT"></span></button>
+    <div class="dsec" data-i="chats"></div>
+    <div id="dChats"></div>
+    <div id="dNone" data-i="noChats" hidden></div>
+  </div>
 </div>
+
+<div id="aiApp" role="main" aria-label="lowedit AI">
+  <div class="ai-top">
+    <button class="ai-ib" id="aiMenu" data-aria="menu" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <div class="ai-title">lowedit</div>
+    <button class="ai-ib" id="aiNew" data-aria="newChat" aria-label="New chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
+  </div>
+  <div class="ai-feed" id="aiFeed"><div class="ai-col" id="aiCol"></div></div>
+  <div class="ai-comp">
+    <input type="file" id="flMedia" accept="video/*,image/*" multiple hidden>
+    <div class="ai-atts" id="aiAtts"></div>
+    <div class="ai-box"><button type="button" class="ai-plus" id="aiPlus" data-aria="attach" aria-label="Attach"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button><textarea id="aiIn" class="ai-in" rows="1" data-ph="ph" placeholder="Message lowedit" aria-label="Message" autocapitalize="sentences"></textarea><button class="ai-send" id="aiSend" disabled aria-label="Send"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>
+    <div class="ai-note" data-i="note"></div>
+  </div>
+</div>
+
 <div id="profile" hidden>
   <div class="card" style="width:min(340px,100%);text-align:center;max-height:92vh;overflow:auto">
     <div class="av big" id="pAv"></div>
@@ -281,13 +312,13 @@ html.ai-lock body{position:fixed;left:0;right:0;width:100%}
     <div class="hint" id="pStat"></div>
     <div id="pVids"></div>
     <input type="file" id="avFile" accept="image/*" hidden>
-    <button class="btn" id="avPick" style="margin-top:16px" data-i="pPhoto"></button>
-    <button class="btn ghost" id="avDel" data-i="pPhotoDel"></button>
-    <button class="btn ghost" id="pNick" data-i="pNick"></button>
-    <button class="btn ghost" id="pTheme"></button>
-    <button class="btn ghost" id="pClear" data-i="pClear"></button>
-    <button class="btn ghost" id="pOut" data-i="pOut"></button>
-    <button class="btn ghost" id="pClose" data-i="pClose"></button>
+    <button class="btn" id="avPick" style="margin-top:16px;width:100%" data-i="pPhoto"></button>
+    <button class="btn ghost" id="avDel" style="width:100%;margin-top:8px" data-i="pPhotoDel"></button>
+    <button class="btn ghost" id="pNick" style="width:100%;margin-top:8px" data-i="pNick"></button>
+    <button class="btn ghost" id="pTheme" style="width:100%;margin-top:8px"></button>
+    <button class="btn ghost" id="pClear" style="width:100%;margin-top:8px" data-i="pClear"></button>
+    <button class="btn ghost" id="pOut" style="width:100%;margin-top:8px" data-i="pOut"></button>
+    <button class="btn ghost" id="pClose" style="width:100%;margin-top:8px" data-i="pClose"></button>
   </div>
 </div>
 <div id="welcome">
@@ -301,22 +332,28 @@ html.ai-lock body{position:fixed;left:0;right:0;width:100%}
 </div>
 <script>
 const $=id=>document.getElementById(id);
-const LANG={en:{welcome:'welcome to',nickPh:'Your nickname (optional)',enter:'Enter',guest:'guest',pPhoto:'Change photo',pPhotoDel:'Remove photo',pNick:'Change nickname',pOut:'Log out',pClose:'Close',pClear:'Delete files and videos',themeToLight:'Light theme',themeToDark:'Dark theme',
- emptyH:'What shall we edit?',emptyP:'Attach clips and music with +, then describe the edit: watermarks, cuts, beats, your symbol, frame format.',ph:'Describe the edit…',attach:'Attach',send:'Send',think:'Thinking',queue:'In queue',probe:'Checking the file',frames:'Looking at frames',scenes:'Finding cuts',beats:'Counting beats',listen:'Listening',ffmpeg:'Rendering',
- dl:'Download ',joined:'Joined ',edits:' · edits: ',newNick:'New nickname:',nickTaken:'This nickname is taken, you joined as a guest. Pick another one.',logoutAsk:'Log out? Your nickname will be freed and your files deleted.',clearAsk:'Delete uploaded files and finished videos?',lost:'Connection lost. If the render took long, check your profile: finished videos are kept.',err:'Error',photoFail:'Could not save the photo.'},
+const LANG={
+en:{welcome:'welcome to',nickPh:'Your nickname (optional)',enter:'Enter',guest:'guest',pPhoto:'Change photo',pPhotoDel:'Remove photo',pNick:'Change nickname',pOut:'Log out',pClose:'Close',pClear:'Delete files and videos',themeToLight:'Light theme',themeToDark:'Dark theme',
+ hello:'lowedit',sub:'Attach your videos with +, then describe the edit, e.g. clips from video 1, music from video 2',s1:'Clips from video 1, music from video 2, cut to the beat',s2:'Remove the watermark from my video',s3:'Hi! What can you do?',
+ ph:'Message lowedit',note:'lowedit AI can make mistakes.',attach:'Attach',send:'Send',stop:'Stop',menu:'Menu',newChat:'New chat',profile:'Profile',chats:'Chats',noChats:'No chats yet',delQ:'Delete this chat?',copy:'Copy',retry:'Try again',
+ think:'Thinking',queue:'In queue, waiting for a free slot',probe:'Checking the file',frames:'Looking at frames',scenes:'Finding cuts',beats:'Counting beats',listen:'Listening',ffmpeg:'Rendering',
+ dl:'Download ',joined:'Joined ',edits:' · edits: ',newNick:'New nickname:',nickTaken:'This nickname is taken, you joined as a guest. Pick another one.',logoutAsk:'Log out? Your nickname will be freed and your files deleted.',clearAsk:'Delete uploaded files and finished videos?',lost:'Connection lost. If the render took long, check your profile: finished videos are kept.',err:'Error',photoFail:'Could not save the photo.',langName:'Русский'},
 ru:{welcome:'добро пожаловать в',nickPh:'Твой ник (необязательно)',enter:'Войти',guest:'гость',pPhoto:'Сменить фото',pPhotoDel:'Убрать фото',pNick:'Сменить ник',pOut:'Выйти',pClose:'Закрыть',pClear:'Удалить файлы и видео',themeToLight:'Светлая тема',themeToDark:'Тёмная тема',
- emptyH:'Что смонтируем?',emptyP:'Прикрепи клипы и музыку через +, потом опиши эдит: водяные знаки, склейки, биты, твой символ, формат кадра.',ph:'Опиши эдит…',attach:'Прикрепить',send:'Отправить',think:'Думаю',queue:'В очереди',probe:'Смотрю файл',frames:'Смотрю кадры',scenes:'Ищу склейки',beats:'Считаю биты',listen:'Слушаю звук',ffmpeg:'Рендерю',
- dl:'Скачать ',joined:'С нами с ',edits:' · эдитов: ',newNick:'Новый ник:',nickTaken:'Этот ник занят, ты вошёл как гость. Выбери другой.',logoutAsk:'Выйти? Ник освободится, файлы удалятся.',clearAsk:'Удалить загруженные файлы и готовые видео?',lost:'Связь оборвалась. Если рендер шёл долго, загляни в профиль: готовые видео сохраняются.',err:'Ошибка',photoFail:'Не удалось сохранить фото.'}};
+ hello:'lowedit',sub:'Прикрепи видео через +, потом опиши эдит: например, клипы из видео 1, музыка из видео 2',s1:'Клипы из видео 1, музыка из видео 2, нарежь под биты',s2:'Убери водяной знак с моего видео',s3:'Привет! Что ты умеешь?',
+ ph:'Напиши lowedit',note:'lowedit AI может ошибаться.',attach:'Прикрепить',send:'Отправить',stop:'Остановить',menu:'Меню',newChat:'Новый чат',profile:'Профиль',chats:'Чаты',noChats:'Пока нет чатов',delQ:'Удалить этот чат?',copy:'Копировать',retry:'Ещё раз',
+ think:'Думаю',queue:'В очереди, жду свободное место',probe:'Смотрю файл',frames:'Смотрю кадры',scenes:'Ищу склейки',beats:'Считаю биты',listen:'Слушаю звук',ffmpeg:'Рендерю',
+ dl:'Скачать ',joined:'С нами с ',edits:' · эдитов: ',newNick:'Новый ник:',nickTaken:'Этот ник занят, ты вошёл как гость. Выбери другой.',logoutAsk:'Выйти? Ник освободится, файлы удалятся.',clearAsk:'Удалить загруженные файлы и готовые видео?',lost:'Связь оборвалась. Если рендер шёл долго, загляни в профиль: готовые видео сохраняются.',err:'Ошибка',photoFail:'Не удалось сохранить фото.',langName:'English'}};
 let lang='en';try{if(localStorage.getItem('lowedit_lang')==='ru')lang='ru'}catch(e){}
 const t=k=>(LANG[lang]&&LANG[lang][k])||LANG.en[k]||k;
 let theme='dark';try{if(localStorage.getItem('lowedit_theme')==='light')theme='light'}catch(e){}
 function applyTheme(){if(theme==='light')document.documentElement.setAttribute('data-theme','light');else document.documentElement.removeAttribute('data-theme');const m=$('metaTheme');if(m)m.content=theme==='light'?'#ffffff':'#000000';$('pTheme').textContent=theme==='light'?t('themeToDark'):t('themeToLight')}
-function applyLang(){document.documentElement.lang=lang;document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));document.querySelectorAll('[data-aria]').forEach(e=>e.setAttribute('aria-label',t(e.dataset.aria)));$('langBtn').textContent=$('langBtnW').textContent=lang==='ru'?'EN':'RU';applyTheme()}
+function applyLang(){document.documentElement.lang=lang;document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));document.querySelectorAll('[data-aria]').forEach(e=>e.setAttribute('aria-label',t(e.dataset.aria)));$('langBtnW').textContent=lang==='ru'?'EN':'RU';$('dLangT').textContent=t('langName');applyTheme();renderChatList();if(!busy)render()}
 const toggleLang=()=>{lang=lang==='ru'?'en':'ru';try{localStorage.setItem('lowedit_lang',lang)}catch(e){}applyLang()};
-$('langBtn').onclick=$('langBtnW').onclick=toggleLang;
+$('langBtnW').onclick=$('dLang').onclick=toggleLang;
 $('pTheme').onclick=()=>{theme=theme==='light'?'dark':'light';try{localStorage.setItem('lowedit_theme',theme)}catch(e){}applyTheme()};
 const toast=m=>{$('toast').textContent=m;$('toast').hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').hidden=true,4500)};
-/* ---- account: random token in the browser, optional first-come nickname (like lowedit) ---- */
+
+/* ---- account: random token in the browser, optional first-come nickname ---- */
 const hex=()=>Array.from(crypto.getRandomValues(new Uint8Array(24)),b=>b.toString(16).padStart(2,'0')).join('');
 const tok=(()=>{try{let x=localStorage.getItem('lowedit_token');if(!x){x=hex();localStorage.setItem('lowedit_token',x)}return x}catch(e){return hex()}})();
 let nick='',avatar='',me={name:'',created:Date.now(),edits:0,videos:[]};try{nick=localStorage.getItem('lowedit_nick')||'';avatar=localStorage.getItem('lowedit_avatar')||''}catch(e){}
@@ -324,47 +361,122 @@ $('nick').value=nick;
 const api=(p,o={})=>fetch(p,{...o,headers:{...(o.headers||{}),Authorization:'Bearer '+tok}});
 async function hello(){try{const j=await(await api('/api/hello',{method:'POST',body:JSON.stringify({name:nick})})).json();me.name=j.name||'';if(j.taken){toast(t('nickTaken'));nick='';try{localStorage.removeItem('lowedit_nick')}catch(e){}$('nick').value=''}}catch(e){}paintAvs()}
 function paintAv(el){const n=(me.name||nick||'').trim();el.style.backgroundSize='cover';
-  if(avatar){el.style.backgroundImage='url("'+avatar+'")';el.style.background='';el.style.backgroundImage='url("'+avatar+'")';el.style.color='';el.textContent=''}
+  if(avatar){el.style.backgroundImage='url("'+avatar+'")';el.style.color='';el.textContent=''}
   else if(n){el.style.backgroundImage='';el.style.backgroundColor='';el.style.color='';el.textContent=[...n].slice(0,2).join('').toUpperCase()}
   else{el.style.backgroundImage='';el.style.backgroundColor='#000';el.style.color='#fff';el.textContent='go'}}
-function paintAvs(){paintAv($('avBtn'));paintAv($('pAv'))}
+function paintAvs(){paintAv($('pAv'))}
 $('enter').onclick=()=>{nick=$('nick').value.trim().slice(0,20);try{localStorage.setItem('lowedit_nick',nick);localStorage.setItem('lowedit_in','1')}catch(e){}hello();$('welcome').classList.add('out')};
 $('nick').addEventListener('keydown',e=>e.key==='Enter'&&$('enter').click());
 $('pNick').onclick=()=>{$('profile').hidden=true;const n=prompt(t('newNick'),nick);if(n===null)return;nick=n.trim().slice(0,20);try{localStorage.setItem('lowedit_nick',nick)}catch(e){}$('nick').value=nick;hello()};
-$('pOut').onclick=async()=>{if(!confirm(t('logoutAsk')))return;try{await api('/api/logout',{method:'POST'})}catch(e){}['lowedit_token','lowedit_nick','lowedit_in','lowedit_avatar'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});location.reload()};
+$('pOut').onclick=async()=>{if(!confirm(t('logoutAsk')))return;try{await api('/api/logout',{method:'POST'})}catch(e){}['lowedit_token','lowedit_nick','lowedit_in','lowedit_avatar','loweditChats'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});location.reload()};
 $('pClear').onclick=async()=>{if(!confirm(t('clearAsk')))return;await api('/api/reset',{method:'POST'});location.reload()};
 $('pClose').onclick=()=>$('profile').hidden=true;$('profile').onclick=e=>{if(e.target===$('profile'))$('profile').hidden=true};
 $('avPick').onclick=()=>$('avFile').click();
 $('avFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const u=URL.createObjectURL(f),img=await new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=u}),n=256,c=document.createElement('canvas');c.width=c.height=n;const s=Math.min(img.naturalWidth,img.naturalHeight);c.getContext('2d').drawImage(img,(img.naturalWidth-s)/2,(img.naturalHeight-s)/2,s,s,0,0,n,n);URL.revokeObjectURL(u);avatar=c.toDataURL('image/jpeg',.85);try{localStorage.setItem('lowedit_avatar',avatar)}catch(x){toast(t('photoFail'))}paintAvs()}catch(x){toast(t('photoFail'))}};
 $('avDel').onclick=()=>{avatar='';try{localStorage.removeItem('lowedit_avatar')}catch(e){}paintAvs()};
-$('avBtn').onclick=async()=>{try{me=await(await api('/api/me')).json()}catch(e){}paintAvs();$('pName').textContent=me.name||nick||t('guest');
+async function openProfile(){drawerClose();try{me=await(await api('/api/me')).json()}catch(e){}paintAvs();$('pName').textContent=me.name||nick||t('guest');
   $('pStat').textContent=t('joined')+new Date(me.created).toLocaleDateString(lang==='ru'?'ru-RU':'en-GB')+t('edits')+me.edits;$('pVids').innerHTML='';
-  (me.videos||[]).forEach(v=>{const r=document.createElement('div'),a=document.createElement('a');r.className='row';a.textContent=v.name+' · '+(v.size/1e6).toFixed(1)+' MB';a.href='/api/v/'+v.name+'?k='+tok;a.target='_blank';r.appendChild(a);$('pVids').appendChild(r)});applyTheme();$('profile').hidden=false};
-/* ---- chat ---- */
-let hist=[],atts=[],busy=0;
-const add=(cls,txt)=>{const e=$('empty');if(e)e.remove();const d=document.createElement('div');d.className=cls;if(txt!=null)d.textContent=txt;$('feed').appendChild(d);scrollTo(0,document.body.scrollHeight);return d};
-const upd=()=>{$('send').disabled=busy||(!$('in').value.trim()&&!atts.length)||atts.some(a=>!a.name)};
-$('in').oninput=()=>{$('in').style.height='auto';$('in').style.height=$('in').scrollHeight+'px';upd()};
-$('plus').onclick=()=>$('fl').click();
-$('fl').onchange=()=>{for(const f of $('fl').files){const a={},c=document.createElement('div');c.className='chip';c.textContent=f.name+' 0%';$('atts').appendChild(c);atts.push(a);
-  const x=new XMLHttpRequest();x.open('POST','/api/upload?name='+encodeURIComponent(f.name));x.setRequestHeader('Authorization','Bearer '+tok);
-  x.upload.onprogress=e=>{c.textContent=f.name+' '+Math.round(e.loaded/e.total*100)+'%'};
-  x.onload=()=>{try{a.name=JSON.parse(x.responseText).name;c.textContent=f.name}catch(e){c.textContent=f.name+': '+t('err');atts.splice(atts.indexOf(a),1)}upd()};
-  x.onerror=()=>{c.textContent=f.name+': '+t('err');atts.splice(atts.indexOf(a),1);upd()};x.send(f)}$('fl').value='';upd()};
-$('send').onclick=async()=>{let m=$('in').value.trim();const names=atts.map(a=>a.name);if(names.length)m=(m+'\n[uploaded: '+names.join(', ')+']').trim();
-  add('msg u',m);hist.push({role:'u',text:m});$('in').value='';$('in').style.height='auto';atts=[];$('atts').innerHTML='';busy=1;upd();
-  const step=add('step',t('think')+'…');let ans=null,txt='';
-  try{const r=await api('/api/chat',{method:'POST',body:JSON.stringify({message:m,history:hist.slice(0,-1)})});
-    if(!r.ok){step.remove();add('msg a err',(await r.json()).error||t('err'))}
+  (me.videos||[]).forEach(v=>{const r=document.createElement('div'),a=document.createElement('a');r.className='row';a.textContent=v.name+' · '+(v.size/1e6).toFixed(1)+' MB';a.href='/api/v/'+v.name+'?k='+tok;a.target='_blank';r.appendChild(a);$('pVids').appendChild(r)});applyTheme();$('profile').hidden=false}
+$('dProf').onclick=openProfile;
+
+/* ---- keyboard: the chat always fits the visible area ---- */
+function fit(){const v=window.visualViewport,a=$('aiApp');if(!v)return;a.style.height=v.height+'px';a.style.transform='translateY('+v.offsetTop+'px)';a.classList.toggle('kb',window.innerHeight-v.height>120)}
+if(window.visualViewport){visualViewport.addEventListener('resize',fit);visualViewport.addEventListener('scroll',fit);fit()}
+
+/* ---- drawer + chat threads (stored on this device) ---- */
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const newThread=()=>({id:uid(),title:'',ts:0,msgs:[]});
+let chats=[];try{chats=JSON.parse(localStorage.getItem('loweditChats')||'[]').filter(c=>c&&c.id&&Array.isArray(c.msgs)&&c.msgs.length)}catch(e){}
+chats.sort((a,b)=>b.ts-a.ts);
+let cur=newThread(),busy=false,atts=[],ctl=null;
+const persist=()=>{chats=chats.slice(0,30);for(let i=0;i<4;i++){try{localStorage.setItem('loweditChats',JSON.stringify(chats));return}catch(e){chats=chats.slice(0,Math.max(1,chats.length-5))}}};
+function saveThread(){cur.msgs=cur.msgs.slice(-60);cur.ts=Date.now();if(!cur.title){const f=cur.msgs.find(m=>m.role==='u');cur.title=((f&&(f.show||f.text))||'Chat').replace(/\s+/g,' ').trim().slice(0,40)}if(!chats.includes(cur))chats.unshift(cur);else chats.sort((a,b)=>b.ts-a.ts);persist();renderChatList()}
+function renderChatList(){const box=$('dChats');box.innerHTML='';$('dNone').hidden=chats.length>0;
+  chats.forEach(c=>{const r=document.createElement('div');r.className='crow'+(c===cur?' on':'');const b=document.createElement('button');b.className='ct';b.textContent=c.title||'Chat';b.onclick=()=>{if(busy)return;cur=c;render();drawerClose();renderChatList()};
+    const x=document.createElement('button');x.className='cx';x.setAttribute('aria-label','Delete');x.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    x.onclick=()=>{if(busy||!confirm(t('delQ')))return;chats=chats.filter(z=>z!==c);persist();if(cur===c){cur=newThread();render()}renderChatList()};r.append(b,x);box.appendChild(r)})}
+const drawer=$('drawer');
+function drawerOpen(){if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();renderChatList();drawer.hidden=false;requestAnimationFrame(()=>requestAnimationFrame(()=>drawer.classList.add('open')))}
+function drawerClose(){drawer.classList.remove('open');setTimeout(()=>{if(!drawer.classList.contains('open'))drawer.hidden=true},230)}
+$('aiMenu').onclick=drawerOpen;$('drClose').onclick=$('drScrim').onclick=drawerClose;
+function newChat(){if(busy)return;if(cur.msgs.length)cur=newThread();render();renderChatList();drawerClose();$('aiIn').focus()}
+$('aiNew').onclick=$('dNew').onclick=newChat;
+
+/* ---- messages ---- */
+const ICON={copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></svg>',retry:'<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 11-2.6-5.9M20 4v5h-5"/></svg>',check:'<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>'};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=s=>esc(s).replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/`([^`\n]+)`/g,'<code>$1</code>');
+const col=$('aiCol'),feed=$('aiFeed');
+const nearBottom=()=>feed.scrollHeight-feed.scrollTop-feed.clientHeight<90;
+const toBottom=()=>{feed.scrollTop=feed.scrollHeight};
+function tile(a){const d=document.createElement('div');if(a.src){d.className='att';const i=document.createElement('img');i.src=a.src;i.alt='';d.appendChild(i)}else{d.className='att file';d.innerHTML='<b></b><span class="n"></span>';d.firstChild.textContent=(a.k||'file').toUpperCase().slice(0,5);d.lastChild.textContent=a.n||''}if(a.num){const nb=document.createElement('span');nb.className='nb';nb.textContent=a.num;d.appendChild(nb)}return d}
+/* номера видео считаются внутри чата: так их и называет человек, и так их видит ИИ */
+const chatFiles=()=>{const o=[];cur.msgs.forEach(m=>(m.atts||[]).forEach(a=>{if(a.name&&!o.includes(a.name))o.push(a.name)}));return o};
+function drawUser(m){const d=document.createElement('div');d.className='msg u';
+  if(m.atts&&m.atts.length){const w=document.createElement('div');w.className='ai-thumbs';const cf=chatFiles();m.atts.forEach(a=>w.appendChild(tile({...a,num:cf.indexOf(a.name)+1||''})));d.appendChild(w)}
+  const s=m.show!==undefined?m.show:m.text;if(s){const x=document.createElement('div');x.className='show';x.textContent=s;d.appendChild(x)}col.appendChild(d)}
+function videoBlock(name){const u='/api/v/'+name+'?k='+tok,w=document.createElement('div');w.className='ai-vid';w.innerHTML='<video controls playsinline preload="metadata"></video><div class="ai-tags"><a class="ai-tag" download></a></div>';w.firstChild.src=u;const a=w.querySelector('a');a.href=u+'&dl=1';a.textContent=t('dl')+name;return w}
+function mkA(){const el=document.createElement('div');el.className='msg a';const tx=document.createElement('div');tx.className='txt';tx.hidden=true;const vs=document.createElement('div');el.append(tx,vs);return{el,tx,vs}}
+function addActs(A,isLast){const row=document.createElement('div');row.className='ai-acts';
+  const cp=document.createElement('button');cp.setAttribute('aria-label',t('copy'));cp.innerHTML=ICON.copy;cp.onclick=async()=>{try{await navigator.clipboard.writeText(A.tx.textContent);cp.innerHTML=ICON.check;cp.classList.add('on');setTimeout(()=>{cp.innerHTML=ICON.copy;cp.classList.remove('on')},1400)}catch(e){}};
+  row.appendChild(cp);
+  if(isLast){const rt=document.createElement('button');rt.setAttribute('aria-label',t('retry'));rt.innerHTML=ICON.retry;rt.onclick=retry;row.appendChild(rt)}
+  A.el.appendChild(row);return row}
+function drawAssist(m,isLast){const A=mkA();if(m.text){A.tx.hidden=false;A.tx.innerHTML=fmt(m.text);if(m.err)A.el.classList.add('err')}(m.videos||[]).forEach(n=>A.vs.appendChild(videoBlock(n)));if(m.text&&!m.err)addActs(A,isLast);col.appendChild(A.el)}
+function render(){col.innerHTML='';
+  if(!cur.msgs.length){const e=document.createElement('div');e.className='ai-empty';e.innerHTML='<h1></h1><p></p><div class="ai-sug"></div>';e.querySelector('h1').textContent=t('hello');e.querySelector('p').textContent=t('sub');
+    ['s1','s2','s3'].forEach(k=>{const b=document.createElement('button');b.textContent=t(k);b.onclick=()=>{$('aiIn').value=t(k);submit()};e.querySelector('.ai-sug').appendChild(b)});col.appendChild(e)}
+  else cur.msgs.forEach((m,i)=>m.role==='u'?drawUser(m):drawAssist(m,i===cur.msgs.length-1));
+  toBottom()}
+
+/* ---- composer ---- */
+const inp=$('aiIn');
+function upd(){const has=!!inp.value.trim()||atts.some(a=>a.name);const s=$('aiSend');s.classList.toggle('stop',busy);s.setAttribute('aria-label',busy?t('stop'):t('send'));s.disabled=busy?false:(!has||atts.some(a=>!a.name&&!a.failed))}
+inp.oninput=()=>{inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,140)+'px';upd()};
+inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!('ontouchstart' in window)){e.preventDefault();if(!busy)submit()}});
+$('aiPlus').onclick=()=>$('flMedia').click();
+function redrawAtts(){const box=$('aiAtts');box.innerHTML='';const base=chatFiles().length;atts.forEach((a,i)=>{const d=tile({src:a.src,n:a.orig,k:a.kind,num:base+i+1});if(!a.name)d.classList.add('load');const x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Remove');x.onclick=()=>{try{a.xhr&&a.xhr.abort()}catch(e){}atts=atts.filter(z=>z!==a);redrawAtts();upd()};d.appendChild(x);if(!a.name){const v=document.createElement('span');v.className='vb';v.textContent=(a.pct||0)+'%';d.appendChild(v)}box.appendChild(d)})}
+function onFiles(inputEl){for(const f of inputEl.files){const ext=((f.name.match(/\.(\w{1,5})$/)||[])[1]||(f.type.split('/')[1]||'file')).toLowerCase();
+  const a={orig:f.name,kind:ext,src:f.type.startsWith('image/')?URL.createObjectURL(f):'',pct:0};atts.push(a);
+  const x=new XMLHttpRequest();a.xhr=x;x.open('POST','/api/upload?name='+encodeURIComponent(f.name));x.setRequestHeader('Authorization','Bearer '+tok);
+  x.upload.onprogress=e=>{a.pct=Math.round(e.loaded/(e.total||1)*100);redrawAtts()};
+  x.onload=()=>{try{a.name=JSON.parse(x.responseText).name}catch(e){atts=atts.filter(z=>z!==a);toast(f.name+': '+t('err'))}redrawAtts();upd()};
+  x.onerror=()=>{atts=atts.filter(z=>z!==a);redrawAtts();toast(f.name+': '+t('err'));upd()};x.send(f)}
+  inputEl.value='';redrawAtts();upd()}
+$('flMedia').onchange=()=>onFiles($('flMedia'));
+
+/* ---- send + stream ---- */
+$('aiSend').onclick=()=>{if(busy){try{ctl&&ctl.abort()}catch(e){}return}submit()};
+function submit(){if(busy)return;const text=inp.value.trim(),ready=atts.filter(a=>a.name);if(!text&&!ready.length)return;
+  const um={role:'u',text:text||(lang==='ru'?'Посмотри видео':'Take a look at the videos'),show:text,atts:ready.map(a=>({n:a.orig,k:a.kind,name:a.name}))};
+  atts=[];redrawAtts();inp.value='';inp.style.height='auto';go(um)}
+function retry(){if(busy)return;while(cur.msgs.length&&cur.msgs[cur.msgs.length-1].role==='a')cur.msgs.pop();const u=cur.msgs.pop();if(!u)return;go(u)}
+async function go(um){
+  const hist=cur.msgs.map(x=>({role:x.role,text:x.text||''}));
+  cur.msgs.push(um);render();busy=true;upd();
+  const th=document.createElement('div');th.className='msg a think';th.setAttribute('role','status');th.innerHTML='<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><b></b>';
+  const lab=th.querySelector('b');lab.textContent=t('think')+'…';col.appendChild(th);toBottom();
+  let A=null,txt='',vids=[],newPara=false,failed='';ctl=new AbortController();
+  const ensureA=()=>{if(!A){A=mkA();col.insertBefore(A.el,th)}return A};
+  try{
+    const r=await api('/api/chat',{method:'POST',signal:ctl.signal,body:JSON.stringify({message:um.text,history:hist,files:chatFiles()})});
+    if(!r.ok){let e=t('err');try{e=(await r.json()).error||e}catch(x){}failed=e}
     else{const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
       for(;;){const{value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});const ls=buf.split('\n');buf=ls.pop();
-        for(const l of ls){if(!l)continue;const o=JSON.parse(l);
-          if(o.t==='step')step.textContent=t(o.k)+'…';
-          if(o.t==='say'){if(!ans)ans=add('msg a','');txt+=(txt?'\n\n':'')+o.text;ans.textContent=txt;scrollTo(0,document.body.scrollHeight)}
-          if(o.t==='video'){const d=add('vid'),u='/api/v/'+o.name+'?k='+tok;d.innerHTML='<video controls playsinline preload="metadata"></video><a></a>';d.firstChild.src=u;d.lastChild.href=u+'&dl=1';d.lastChild.textContent=t('dl')+o.name}
-          if(o.t==='done')step.remove()}}}
-  }catch(e){step.remove();add('msg a err',t('lost'))}
-  if(txt)hist.push({role:'a',text:txt});busy=0;upd()};
-applyLang();paintAvs();
+        for(const l of ls){if(!l)continue;let o;try{o=JSON.parse(l)}catch(x){continue}const nb=nearBottom();
+          if(o.t==='delta'){const a=ensureA();if(newPara&&txt){txt+='\n\n';newPara=false}txt+=o.text;a.tx.hidden=false;a.tx.innerHTML=fmt(txt);th.hidden=true}
+          else if(o.t==='say'){const a=ensureA();txt+=(txt?'\n\n':'')+o.text;a.tx.hidden=false;a.tx.innerHTML=fmt(txt)}
+          else if(o.t==='turn')newPara=true;
+          else if(o.t==='step'){lab.textContent=t(o.k)+'…';th.hidden=false}
+          else if(o.t==='video'){vids.push(o.name);ensureA().vs.appendChild(videoBlock(o.name))}
+          else if(o.t==='done'){th.hidden=true}
+          if(nb)toBottom()}}}
+  }catch(e){if(!(e&&e.name==='AbortError'))failed=t('lost')}
+  th.remove();ctl=null;busy=false;
+  if(failed&&!txt&&!vids.length){saveThread();drawAssist({role:'a',text:failed,err:true},false)}
+  else if(txt||vids.length){cur.msgs.push({role:'a',text:txt,videos:vids});saveThread();render()}
+  else saveThread();
+  upd();toBottom()}
+render();applyLang();paintAvs();
 if(localStorage.getItem('lowedit_in')==='1'){$('welcome').classList.add('out');hello()}
 </script></body></html>
