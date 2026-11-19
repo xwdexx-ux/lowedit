@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<style>html,body{background:#000}html[data-theme=light],html[data-theme=light] body{background:#fff}</style>
+<title>lowedit</title>
+<meta name="theme-color" content="#000000" id="metaTheme">
+<script>try{var _t=localStorage.getItem("lowedit_theme");if(_t==="light"){document.documentElement.setAttribute("data-theme","light");document.getElementById("metaTheme").content="#ffffff"}var _l=localStorage.getItem("lowedit_lang");document.documentElement.lang=_l==="ru"?"ru":"en"}catch(e){}</script>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="lowedit">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Instrument+Sans:wght@400;600&family=Space+Mono:wght@400;700&display=swap">
+<style>
+@font-face{font-family:"Lowend Inter";src:url(/inter-light.woff) format("woff");font-weight:300;font-style:normal;font-display:swap}
+:root{--a:#fff;--b:#8a8a8a;--ink:#000;--text:#fff;--muted:#8a8a8a;--glass:#0d0d0d;--edge:#242424;--track:#2a2a2a;--thumb:#fff;--onA:#000;--playbg:#fff;--playfg:#000;--field:#000;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}html{touch-action:manipulation}
+body{background:var(--ink);color:var(--text);font:400 16px/1.5 "Instrument Sans",system-ui,sans-serif;overflow-x:hidden}
+.wrap{max-width:1000px;margin:0 auto;padding:28px 16px 80px}
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:22px}
+.logo{font:800 26px "Bricolage Grotesque",sans-serif;letter-spacing:-.03em}
+.logo i{font-style:normal;color:var(--a)}
+.grid{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+.grid>*,.card{min-width:0}
+@media(min-width:860px){.grid{grid-template-columns:420px minmax(0,1fr);align-items:start}}
+.card{background:var(--glass);border:1px solid var(--edge);border-radius:26px;padding:20px}
+.cover{position:relative;width:100%;max-width:340px;margin:0 auto;aspect-ratio:1;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,var(--a),var(--b));box-shadow:0 24px 60px #0007;transition:transform .08s linear;display:grid;place-items:center}
+.cover img{width:100%;height:100%;object-fit:cover;display:none}
+.cover.has img{display:block}
+.cover span{font:800 90px "Bricolage Grotesque",sans-serif;opacity:.5}
+.cover.has span{display:none}
+canvas{width:100%;height:56px;display:block;margin:16px 0 4px}
+.title{font:800 24px/1.15 "Bricolage Grotesque",sans-serif;letter-spacing:-.02em;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hint{color:var(--muted);font-size:14px}
+.bar{display:flex;align-items:center;gap:14px;margin-top:12px}
+.play{flex:none;width:58px;height:58px;border-radius:50%;border:0;background:var(--playbg);color:var(--playfg);font-size:20px;cursor:pointer;transition:transform .12s}
+.play:active{transform:scale(.94)}
+.play:disabled{opacity:.35;cursor:not-allowed}
+.time{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.seekbox{flex:1}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;cursor:pointer;--p:0%}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:6px;background:linear-gradient(90deg,var(--a) var(--p),var(--track) var(--p))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--thumb);margin-top:-7px;box-shadow:0 2px 8px #0008}
+input[type=range]::-moz-range-track{height:6px;border-radius:6px;background:var(--track)}
+input[type=range]::-moz-range-progress{height:6px;border-radius:6px;background:var(--a)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border:0;border-radius:50%;background:var(--thumb)}
+input[type=range]:disabled{opacity:.4}
+h2{font:800 18px "Bricolage Grotesque",sans-serif;margin-bottom:10px}
+.src{display:flex;gap:8px}
+.src input[type=text]{flex:1;min-width:0;background:var(--field);border:1px solid var(--edge);border-radius:14px;padding:12px 14px;color:var(--text);font:inherit}
+.src input::placeholder{color:#a59cc488}
+.btn{border:0;border-radius:14px;padding:12px 16px;font:600 15px "Instrument Sans",sans-serif;cursor:pointer;background:var(--a);color:var(--onA)}
+.btn.ghost{background:var(--glass);border:1px solid var(--edge);color:var(--text)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.drop{margin-top:10px;display:block;text-align:center;border:1.5px dashed var(--edge);border-radius:14px;padding:16px;color:var(--muted);cursor:pointer;transition:.15s}
+.drop:hover,.drop.over,.drop:focus-within{border-color:var(--a);color:var(--text)}
+.drop input{position:absolute;opacity:0;pointer-events:none}
+.fx{margin-top:18px}
+.ctl{padding:14px 0;border-top:1px solid var(--edge)}
+.ctl:first-of-type{border-top:0;padding-top:0}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline}
+.ctl label{font-weight:600}
+.ctl output{font:800 34px "Bricolage Grotesque",sans-serif;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--a)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--edge);background:var(--glass);color:var(--text);border-radius:999px;padding:9px 16px;font:inherit;font-size:14px;cursor:pointer}
+.chip:hover{border-color:var(--a)}
+.dl{width:100%;margin-top:18px;padding:16px;font-size:16px}
+.status{min-height:22px;margin-top:10px;text-align:center;color:var(--muted);font-size:14px}
+.note{margin-top:10px;font-size:13px;color:var(--muted)}
+:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.card{border-radius:18px;backdrop-filter:none;-webkit-backdrop-filter:none}
+.cover{background:#161616;box-shadow:none;border-radius:12px}
+.cover span{opacity:.25;width:46%;height:46%;display:block}
+.item{display:flex;align-items:center;gap:8px;padding:12px 0;border-top:1px solid var(--edge)}
+.item:first-child{border-top:0}
+.item .meta{flex:1;min-width:0}
+.item b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item small{color:var(--muted);font-size:13px}
+.sm{padding:9px 13px;font-size:14px}
+.chip[aria-pressed=true]{background:var(--a);color:var(--onA);border-color:transparent;font-weight:600}
+#welcome{position:fixed;inset:0;z-index:100;background:radial-gradient(ellipse at 50% 28%,#232323,#000 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;transition:opacity .6s,visibility .6s}
+#welcome.out{opacity:0;visibility:hidden}
+.w-sub{color:var(--muted);letter-spacing:.35em;text-transform:uppercase;font-size:12px}
+.w-logo{font:800 clamp(64px,22vw,150px)/1.05 "Bricolage Grotesque",sans-serif;letter-spacing:-.04em;margin-bottom:.2em;background:linear-gradient(180deg,#fff 0%,#a8a8a8 47%,#fff 50%,#4d4d4d 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-box-reflect:below -.1em linear-gradient(transparent 38%,rgba(255,255,255,.3))}
+.w-card{margin-top:30px;width:min(340px,100%);padding:18px;border-radius:22px;background:linear-gradient(135deg,#ffffff22,#ffffff08);border:1px solid #ffffff30;box-shadow:inset 0 1px 0 #ffffff45,0 20px 50px #000a;position:relative;overflow:hidden}
+.w-card::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 35%,#ffffff22 50%,transparent 65%);transform:translateX(-100%);animation:sheen 4s infinite}
+@keyframes sheen{to{transform:translateX(100%)}}
+@media(prefers-reduced-motion:reduce){.w-card::after{animation:none}}
+#nick{width:100%;background:#0006;border:1px solid var(--edge);border-radius:14px;padding:12px 14px;color:var(--text);font:inherit;text-align:center}
+#notice{position:fixed;top:12px;left:12px;right:12px;z-index:90;padding:14px 16px;border-radius:16px;background:var(--text);color:var(--ink);font-weight:600;box-shadow:0 10px 40px #000a;cursor:pointer}
+#notice[hidden]{display:none}
+.badge{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--a);color:var(--onA);margin-left:6px;font-weight:600}
+
+.av{width:36px;height:36px;border-radius:50%;background:#1a1a1a center/cover no-repeat;border:1px solid var(--edge);display:grid;place-items:center;font:800 15px "Bricolage Grotesque",sans-serif;color:var(--text);cursor:pointer;flex:none;padding:0}
+.av.big{width:120px;height:120px;font-size:48px;margin:0 auto;cursor:default}
+#profile{position:fixed;inset:0;z-index:95;background:#000c;display:flex;align-items:center;justify-content:center;padding:20px}
+#profile[hidden]{display:none}
+#profile .btn{width:100%;margin-top:8px}
+
+.langb{font-weight:700;letter-spacing:.04em;min-width:46px}
+#langBtnW{position:absolute;top:14px;right:14px}
+#welcome{position:fixed}
+:root[data-theme=light]{--a:#000;--b:#555;--ink:#fff;--text:#000;--muted:#666;--glass:#f3f3f3;--edge:#dadada;--track:#d2d2d2;--thumb:#000;--onA:#fff;--playbg:#000;--playfg:#fff;--field:#fff;color-scheme:light}
+[data-theme=light] .cover{background:#e8e8e8}
+[data-theme=light] .av{background:#e8e8e8}
+[data-theme=light] .src input::placeholder,[data-theme=light] #nick::placeholder{color:#00000066}
+[data-theme=light] #welcome{background:radial-gradient(ellipse at 50% 28%,#fff,#e4e4e4 70%)}
+[data-theme=light] .w-logo{background:linear-gradient(180deg,#000 0%,#5a5a5a 47%,#000 50%,#b5b5b5 100%);-webkit-background-clip:text;background-clip:text}
+[data-theme=light] .w-card{background:linear-gradient(135deg,#00000012,#00000005);border-color:#00000026;box-shadow:inset 0 1px 0 #fff,0 20px 50px #0002}
+[data-theme=light] .w-card::after{background:linear-gradient(110deg,transparent 35%,#ffffff99 50%,transparent 65%)}
+[data-theme=light] #nick{background:#fff}
+[data-theme=light] input[type=range]::-webkit-slider-thumb{box-shadow:0 2px 8px #0004}
+[data-theme=light] .cover{box-shadow:none}
+
+.ctls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ctls .ctl,.ctls .ctl:first-of-type{border:1px solid var(--edge);border-radius:16px;padding:12px 14px 6px}
+.ctls .ctl.full{grid-column:1/-1}
+.ctls .ctl .top{flex-direction:column;align-items:flex-start;gap:0}
+.ctls .ctl.full .top{flex-direction:row;align-items:baseline;justify-content:space-between}
+.ctls .ctl label{font-size:14px;color:var(--muted)}
+.ctls .ctl output{font-size:26px;white-space:nowrap}
+.ctls .ctl.full output{font-size:34px}
+.ctls input[type=range]{height:44px}
+.ctls input[type=range]::-webkit-slider-runnable-track{height:12px;border-radius:12px}
+.ctls input[type=range]::-webkit-slider-thumb{width:30px;height:30px;margin-top:-9px}
+.ctls input[type=range]::-moz-range-track,.ctls input[type=range]::-moz-range-progress{height:12px;border-radius:12px}
+.ctls input[type=range]::-moz-range-thumb{width:30px;height:30px}
+
+/* заглушка обложки: белые скруглённые полоски на чистом чёрном */
+.cover{background:#000;border:1px solid var(--edge)}
+.cover span{opacity:1;color:#fff}
+[data-theme=light] .cover{background:#000}
+/* премиум */
+.prem-sub{color:var(--muted);margin:-4px 0 14px}
+.pv{position:relative;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#000;display:grid;place-items:center;text-align:center;color:#fff;margin-bottom:14px}
+.pv{container-type:inline-size}
+.pv-t{font:300 clamp(18px,5.4vw,30px)/1.095 "Lowend Inter",-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:8.44cqw;transform:scaleX(.71);opacity:0;animation:pvfade 8s infinite}
+.pv-bar{position:absolute;left:0;bottom:0;height:4px;background:#fff;width:0;animation:pvbar 8s linear infinite}
+@keyframes pvfade{0%,6%{opacity:0}34%,92%{opacity:1}100%{opacity:0}}
+@keyframes pvbar{from{width:0}to{width:100%}}
+@media(prefers-reduced-motion:reduce){.pv-t{animation:none;opacity:1}.pv-bar{animation:none;width:40%}}
+.prem-list{margin:10px 0 16px 6px;padding-left:22px;color:var(--muted);font-size:15px}
+.prem-list li{margin:6px 0}
+#premActive{margin:0 0 12px;color:var(--text);font-weight:600}
+#users .item{flex-wrap:wrap}
+
+/* меню + lowedit AI (чат) */
+.logoRow{display:flex;align-items:center}
+.menub,.ai-ib{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;margin:0;padding:0;border:0;background:transparent;color:var(--text);border-radius:12px;cursor:pointer;flex:none}
+.menub{margin-left:-8px;margin-right:6px}
+.menub:hover,.ai-ib:hover{background:var(--glass)}
+.menub svg,.ai-ib svg{width:22px;height:22px}
+#drawer{position:fixed;inset:0;z-index:80}
+#drawer[hidden],#aiApp[hidden]{display:none}
+#drawer .scrim{position:absolute;inset:0;background:rgba(0,0,0,.6);opacity:0;transition:opacity .2s}
+#drawer .panel{position:relative;width:min(300px,84vw);height:100%;background:var(--glass);border-right:1px solid var(--edge);padding:calc(14px + env(safe-area-inset-top)) 12px 16px;display:flex;flex-direction:column;gap:4px;transform:translateX(-100%);transition:transform .22s ease}
+#drawer.open .scrim{opacity:1}#drawer.open .panel{transform:none}
+.dl-h{display:flex;align-items:center;justify-content:space-between;padding:0 4px 14px 10px;font:800 24px "Bricolage Grotesque",sans-serif;letter-spacing:-.03em}
+.ditem{display:flex;align-items:center;gap:12px;width:100%;margin:0;padding:12px;border:0;border-radius:12px;background:transparent;color:var(--text);font:500 16px "Instrument Sans",sans-serif;text-align:left;cursor:pointer}
+.ditem:hover,.ditem.on{background:var(--track)}
+.ditem svg{width:20px;height:20px;flex:none}
+.dsec{margin:14px 10px 6px;font:600 12px "Instrument Sans",sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+#dChats{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:2px}
+.crow{display:flex;align-items:center;border-radius:12px;flex:none}
+.crow:hover,.crow.on{background:var(--track)}
+.crow .ct{flex:1;min-width:0;margin:0;padding:11px 12px;border:0;background:transparent;color:var(--text);font:400 15px "Instrument Sans",sans-serif;text-align:left;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crow .cx{flex:none;width:36px;height:36px;margin:0 4px 0 0;padding:0;border:0;background:transparent;color:var(--muted);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.crow .cx:hover{color:var(--text)}
+.crow .cx svg{width:18px;height:18px}
+#dNone{color:var(--muted);padding:6px 12px;font-size:14px}
+#dNone[hidden]{display:none}
+#aiApp{position:fixed;left:0;right:0;top:0;z-index:70;background:var(--ink);color:var(--text);display:flex;flex-direction:column;height:100vh;height:100dvh;overscroll-behavior:none}
+.ai-top{touch-action:none;flex:none;display:flex;align-items:center;justify-content:space-between;padding:calc(8px + env(safe-area-inset-top)) 10px 8px}
+.ai-title{font:600 16px "Instrument Sans",sans-serif}
+.ai-feed{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:8px 16px 16px}
+.ai-col{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.ai-empty{text-align:center;margin-top:14vh}
+.ai-empty h1{font:800 38px "Bricolage Grotesque",sans-serif;letter-spacing:-.03em}
+.ai-empty p{color:var(--muted);margin-top:6px}
+.ai-sug{display:flex;flex-direction:column;gap:8px;margin-top:26px;align-items:stretch}
+.ai-sug button{margin:0;text-align:left;padding:12px 16px;border:1px solid var(--edge);background:var(--glass);color:var(--text);border-radius:16px;font:400 15px "Instrument Sans",sans-serif;cursor:pointer}
+.ai-sug button:hover{border-color:var(--a)}
+.msg{overflow-wrap:anywhere;white-space:pre-wrap}
+.msg.u{align-self:flex-end;max-width:85%;background:var(--glass);border:1px solid var(--edge);padding:10px 14px;border-radius:18px}
+.msg.a{align-self:flex-start;max-width:100%;line-height:1.6}
+.msg.a.err{color:var(--muted)}
+.ai-w{animation:aiw .6s ease-out both}
+@keyframes aiw{from{opacity:0}to{opacity:1}}
+.ai-acts{display:flex;align-items:center;gap:2px;margin-top:10px;white-space:normal;margin-left:-8px}
+.ai-acts button{background:none;border:0;padding:8px;border-radius:10px;color:var(--muted);cursor:pointer;display:flex;-webkit-tap-highlight-color:transparent}
+.ai-acts button:active{background:var(--glass)}
+.ai-acts button.on{color:var(--text,#fff)}
+.ai-acts svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.ai-disc{color:var(--muted);font-size:13px;margin-top:6px;white-space:normal}
+.ai-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ai-tag{border:1px solid var(--edge);border-radius:999px;padding:4px 10px;font-size:13px;color:var(--muted);white-space:normal}
+button.ai-tag{margin:0;background:var(--a);color:var(--onA);border-color:transparent;font-weight:600;cursor:pointer}
+.think{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:15px;min-width:0}
+.think{gap:12px}.think .dots{position:relative;flex:none;width:16px;height:14px}.think .dots i{position:absolute;left:0;top:5.5px;width:3.4px;height:3.4px;border-radius:50%;background:var(--text);will-change:transform}.think .dots i:nth-child(1){animation:dA 1.7s ease-in-out infinite}.think .dots i:nth-child(2){animation:dB 1.3s ease-in-out infinite}.think .dots i:nth-child(3){animation:dC 1.9s ease-in-out infinite}@keyframes dA{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(2px,-3px) scale(.7)}50%{transform:translate(1px,2.5px) scale(1.15)}75%{transform:translate(-.5px,-1px) scale(.8)}}@keyframes dB{0%,100%{transform:translate(6px,0) scale(.6)}30%{transform:translate(7px,-4px) scale(1.15)}60%{transform:translate(5px,3px) scale(.85)}}@keyframes dC{0%,100%{transform:translate(12px,0) scale(1.1)}35%{transform:translate(11px,3px) scale(.65)}70%{transform:translate(13px,-3px) scale(1)}}.think b{transition:opacity .2s}
+.think svg{flex:none;width:18px;height:18px;animation:tkp 1.6s ease-in-out infinite}
+.think b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400;background:linear-gradient(90deg,var(--muted) 30%,var(--text) 50%,var(--muted) 70%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:tks 2s linear infinite}
+@keyframes tkp{0%,100%{opacity:.45}50%{opacity:1}}
+@keyframes tks{from{background-position:100% 0}to{background-position:-100% 0}}
+.ai-vid video{display:block;width:100%;max-width:320px;max-height:60vh;margin-top:10px;border-radius:14px;background:#000}
+.ai-vid .ai-tags{margin-top:10px}
+.dots span{display:inline-block;width:7px;height:7px;margin-right:5px;border-radius:50%;background:var(--muted);animation:aid 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes aid{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.ai-comp{flex:none;padding:6px 12px calc(10px + env(safe-area-inset-bottom))}
+#aiApp.kb .ai-comp{padding-bottom:8px}
+.ai-box{max-width:720px;margin:0 auto;display:flex;align-items:flex-end;gap:8px;background:var(--glass);border:1px solid var(--edge);border-radius:26px;padding:6px}
+.ai-box .ai-in{flex:1;align-self:center;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font:400 16px/1.45 "Instrument Sans",system-ui,sans-serif;max-height:140px;min-height:1.45em;overflow-y:auto;padding:8px 0;white-space:pre-wrap;overflow-wrap:anywhere;-webkit-user-select:text;user-select:text;-webkit-tap-highlight-color:transparent;cursor:text}
+.ai-in.empty::before{content:attr(data-placeholder);color:var(--muted);pointer-events:none}
+#aiApp.kb .ai-note{display:none}
+.ai-send{flex:none;width:38px;height:38px;margin:0;padding:0;border:0;border-radius:50%;background:var(--a);color:var(--onA);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ai-send:disabled{opacity:.3;cursor:not-allowed}
+.ai-note{text-align:center;color:var(--muted);font-size:12px;margin-top:8px}
+
+html.ai-lock,html.ai-lock body{overflow:hidden;overscroll-behavior:none}
+html.ai-lock .wrap{visibility:hidden}
+.wrap{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+.ai-plus{flex:none;width:38px;height:38px;margin:0;padding:0;border:1px solid var(--edge);border-radius:50%;background:transparent;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s}
+.ai-plus:hover{background:var(--track)}
+.ai-plus.on{transform:rotate(45deg)}
+.ai-pop{max-width:720px;margin:0 auto 8px;background:var(--glass);border:1px solid var(--edge);border-radius:18px;padding:6px;display:flex;flex-direction:column}
+.ai-pop[hidden]{display:none}
+.ai-pop button{display:flex;align-items:center;gap:12px;width:100%;margin:0;padding:12px;border:0;border-radius:12px;background:transparent;color:var(--text);font:500 15px "Instrument Sans",sans-serif;text-align:left;cursor:pointer}
+.ai-pop button:hover,.ai-pop button:active{background:var(--track)}
+.ai-pop svg{width:20px;height:20px;flex:none}
+.ai-atts{max-width:720px;margin:0 auto 8px;display:flex;gap:8px;overflow-x:auto;padding:2px}
+.ai-atts:empty{display:none}
+.att{position:relative;flex:none;width:64px;height:64px;border-radius:14px;border:1px solid var(--edge);background:var(--glass);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.att img{width:100%;height:100%;object-fit:cover;display:block}
+.att.file{width:auto;min-width:64px;max-width:150px;padding:0 12px;flex-direction:column;gap:2px;color:var(--muted);font-size:11px}
+.att.file b{color:var(--text);font:700 13px "Instrument Sans",sans-serif}
+.att.file .n{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.att.load{opacity:.5;animation:aid 1.2s infinite}
+.att .x{position:absolute;top:3px;right:3px;width:20px;height:20px;margin:0;padding:0;border:0;border-radius:50%;background:#000c;color:#fff;font-size:13px;line-height:20px;cursor:pointer}
+.att .vb{position:absolute;left:4px;bottom:4px;font-size:10px;line-height:1;background:#000c;color:#fff;border-radius:6px;padding:3px 5px}
+.ai-thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;justify-content:flex-end}
+.ai-thumbs .att{width:72px;height:72px}
+.ai-thumbs .att.file{width:auto;min-width:72px}
+#aiApp.drag{outline:2px dashed var(--a);outline-offset:-8px}
+/* чат не должен ездить: страница под ним намертво закреплена, пока чат открыт (iOS иначе прокручивает её при клавиатуре) */
+html.ai-lock body{position:fixed;left:0;right:0;width:100%}
+#aiApp{will-change:transform}
+.think{flex-wrap:wrap;row-gap:8px}
+.think .pbar{flex:0 0 100%;height:3px;border-radius:3px;background:var(--track);overflow:hidden}
+.think .pbar i{display:block;height:100%;width:0;background:var(--text);border-radius:3px;transition:width .5s linear}
+.ai-vidgone{margin-top:10px;color:var(--muted);font-size:14px}
+</style>
+<style>
+[hidden]{display:none!important}
+#feed{display:flex;flex-direction:column;gap:14px;min-height:40vh;padding-bottom:150px}
+.empty{margin:12vh auto 0;text-align:center}.empty h1{font:800 34px "Bricolage Grotesque",sans-serif;letter-spacing:-.03em}
+.step{color:var(--muted);font-size:14px;align-self:flex-start}
+.vid{align-self:flex-start;max-width:min(100%,340px)}.vid video{width:100%;border-radius:18px;background:#000;border:1px solid var(--edge)}
+.vid a{display:inline-block;margin-top:8px;color:var(--text);font-size:14px}
+.comp{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--ink) 30%)}
+.comp>div{max-width:760px;margin:0 auto}
+.box{display:flex;align-items:flex-end;gap:8px;background:var(--glass);border:1px solid var(--edge);border-radius:26px;padding:8px}
+.box textarea{flex:1;background:none;border:0;outline:0;color:var(--text);font:400 16px/1.4 "Instrument Sans",sans-serif;resize:none;max-height:140px;padding:9px 6px}
+.round{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:var(--a);color:var(--onA);font-size:20px;cursor:pointer}.round.g{background:var(--track);color:var(--text)}.round:disabled{opacity:.35}
+#atts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.chip{background:var(--glass);border:1px solid var(--edge);border-radius:12px;padding:5px 10px;font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-top:8px;text-align:left}.row a{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:200;background:var(--glass);border:1px solid var(--edge);border-radius:14px;padding:10px 14px;font-size:14px;max-width:90vw}
+</style></head><body>
+<div id="toast" hidden></div>
+<div class="wrap">
+<header><div class="logo">lowedit</div><div style="display:flex;align-items:center;gap:12px"><button class="btn ghost sm langb" id="langBtn">RU</button><button class="av" id="avBtn" aria-label="Profile"></button></div></header>
+<div id="feed"><div class="empty" id="empty"><h1 data-i="emptyH"></h1><p class="hint" data-i="emptyP"></p></div></div>
+<div class="comp"><div><div id="atts"></div><div class="box"><button class="round g" id="plus" data-aria="attach" aria-label="Attach">+</button><input type="file" id="fl" accept="video/*,audio/*,image/*" multiple hidden><textarea id="in" rows="1" data-ph="ph" placeholder="Describe the edit…"></textarea><button class="round" id="send" disabled data-aria="send" aria-label="Send">↑</button></div></div></div>
+</div>
+<div id="profile" hidden>
+  <div class="card" style="width:min(340px,100%);text-align:center;max-height:92vh;overflow:auto">
+    <div class="av big" id="pAv"></div>
+    <div class="title" id="pName" style="text-align:center;margin-top:14px"></div>
+    <div class="hint" id="pStat"></div>
+    <div id="pVids"></div>
+    <input type="file" id="avFile" accept="image/*" hidden>
+    <button class="btn" id="avPick" style="margin-top:16px" data-i="pPhoto"></button>
+    <button class="btn ghost" id="avDel" data-i="pPhotoDel"></button>
+    <button class="btn ghost" id="pNick" data-i="pNick"></button>
+    <button class="btn ghost" id="pTheme"></button>
+    <button class="btn ghost" id="pClear" data-i="pClear"></button>
+    <button class="btn ghost" id="pOut" data-i="pOut"></button>
+    <button class="btn ghost" id="pClose" data-i="pClose"></button>
+  </div>
+</div>
+<div id="welcome">
+  <button class="btn ghost sm langb" id="langBtnW">RU</button>
+  <div class="w-sub" data-i="welcome"></div>
+  <div class="w-logo">lowedit</div>
+  <div class="w-card">
+    <input type="text" id="nick" maxlength="20" data-ph="nickPh" placeholder="Your nickname (optional)" autocomplete="off">
+    <button class="btn" id="enter" style="width:100%;margin-top:10px" data-i="enter"></button>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const LANG={en:{welcome:'welcome to',nickPh:'Your nickname (optional)',enter:'Enter',guest:'guest',pPhoto:'Change photo',pPhotoDel:'Remove photo',pNick:'Change nickname',pOut:'Log out',pClose:'Close',pClear:'Delete files and videos',themeToLight:'Light theme',themeToDark:'Dark theme',
+ emptyH:'What shall we edit?',emptyP:'Attach clips and music with +, then describe the edit: watermarks, cuts, beats, your symbol, frame format.',ph:'Describe the edit…',attach:'Attach',send:'Send',think:'Thinking',queue:'In queue',probe:'Checking the file',frames:'Looking at frames',scenes:'Finding cuts',beats:'Counting beats',listen:'Listening',ffmpeg:'Rendering',
+ dl:'Download ',joined:'Joined ',edits:' · edits: ',newNick:'New nickname:',nickTaken:'This nickname is taken, you joined as a guest. Pick another one.',logoutAsk:'Log out? Your nickname will be freed and your files deleted.',clearAsk:'Delete uploaded files and finished videos?',lost:'Connection lost. If the render took long, check your profile: finished videos are kept.',err:'Error',photoFail:'Could not save the photo.'},
+ru:{welcome:'добро пожаловать в',nickPh:'Твой ник (необязательно)',enter:'Войти',guest:'гость',pPhoto:'Сменить фото',pPhotoDel:'Убрать фото',pNick:'Сменить ник',pOut:'Выйти',pClose:'Закрыть',pClear:'Удалить файлы и видео',themeToLight:'Светлая тема',themeToDark:'Тёмная тема',
+ emptyH:'Что смонтируем?',emptyP:'Прикрепи клипы и музыку через +, потом опиши эдит: водяные знаки, склейки, биты, твой символ, формат кадра.',ph:'Опиши эдит…',attach:'Прикрепить',send:'Отправить',think:'Думаю',queue:'В очереди',probe:'Смотрю файл',frames:'Смотрю кадры',scenes:'Ищу склейки',beats:'Считаю биты',listen:'Слушаю звук',ffmpeg:'Рендерю',
+ dl:'Скачать ',joined:'С нами с ',edits:' · эдитов: ',newNick:'Новый ник:',nickTaken:'Этот ник занят, ты вошёл как гость. Выбери другой.',logoutAsk:'Выйти? Ник освободится, файлы удалятся.',clearAsk:'Удалить загруженные файлы и готовые видео?',lost:'Связь оборвалась. Если рендер шёл долго, загляни в профиль: готовые видео сохраняются.',err:'Ошибка',photoFail:'Не удалось сохранить фото.'}};
+let lang='en';try{if(localStorage.getItem('lowedit_lang')==='ru')lang='ru'}catch(e){}
+const t=k=>(LANG[lang]&&LANG[lang][k])||LANG.en[k]||k;
+let theme='dark';try{if(localStorage.getItem('lowedit_theme')==='light')theme='light'}catch(e){}
+function applyTheme(){if(theme==='light')document.documentElement.setAttribute('data-theme','light');else document.documentElement.removeAttribute('data-theme');const m=$('metaTheme');if(m)m.content=theme==='light'?'#ffffff':'#000000';$('pTheme').textContent=theme==='light'?t('themeToDark'):t('themeToLight')}
+function applyLang(){document.documentElement.lang=lang;document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));document.querySelectorAll('[data-aria]').forEach(e=>e.setAttribute('aria-label',t(e.dataset.aria)));$('langBtn').textContent=$('langBtnW').textContent=lang==='ru'?'EN':'RU';applyTheme()}
+const toggleLang=()=>{lang=lang==='ru'?'en':'ru';try{localStorage.setItem('lowedit_lang',lang)}catch(e){}applyLang()};
+$('langBtn').onclick=$('langBtnW').onclick=toggleLang;
+$('pTheme').onclick=()=>{theme=theme==='light'?'dark':'light';try{localStorage.setItem('lowedit_theme',theme)}catch(e){}applyTheme()};
+const toast=m=>{$('toast').textContent=m;$('toast').hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').hidden=true,4500)};
+/* ---- account: random token in the browser, optional first-come nickname (like lowedit) ---- */
+const hex=()=>Array.from(crypto.getRandomValues(new Uint8Array(24)),b=>b.toString(16).padStart(2,'0')).join('');
+const tok=(()=>{try{let x=localStorage.getItem('lowedit_token');if(!x){x=hex();localStorage.setItem('lowedit_token',x)}return x}catch(e){return hex()}})();
+let nick='',avatar='',me={name:'',created:Date.now(),edits:0,videos:[]};try{nick=localStorage.getItem('lowedit_nick')||'';avatar=localStorage.getItem('lowedit_avatar')||''}catch(e){}
+$('nick').value=nick;
+const api=(p,o={})=>fetch(p,{...o,headers:{...(o.headers||{}),Authorization:'Bearer '+tok}});
+async function hello(){try{const j=await(await api('/api/hello',{method:'POST',body:JSON.stringify({name:nick})})).json();me.name=j.name||'';if(j.taken){toast(t('nickTaken'));nick='';try{localStorage.removeItem('lowedit_nick')}catch(e){}$('nick').value=''}}catch(e){}paintAvs()}
+function paintAv(el){const n=(me.name||nick||'').trim();el.style.backgroundSize='cover';
+  if(avatar){el.style.backgroundImage='url("'+avatar+'")';el.style.background='';el.style.backgroundImage='url("'+avatar+'")';el.style.color='';el.textContent=''}
+  else if(n){el.style.backgroundImage='';el.style.backgroundColor='';el.style.color='';el.textContent=[...n].slice(0,2).join('').toUpperCase()}
+  else{el.style.backgroundImage='';el.style.backgroundColor='#000';el.style.color='#fff';el.textContent='go'}}
+function paintAvs(){paintAv($('avBtn'));paintAv($('pAv'))}
+$('enter').onclick=()=>{nick=$('nick').value.trim().slice(0,20);try{localStorage.setItem('lowedit_nick',nick);localStorage.setItem('lowedit_in','1')}catch(e){}hello();$('welcome').classList.add('out')};
+$('nick').addEventListener('keydown',e=>e.key==='Enter'&&$('enter').click());
+$('pNick').onclick=()=>{$('profile').hidden=true;const n=prompt(t('newNick'),nick);if(n===null)return;nick=n.trim().slice(0,20);try{localStorage.setItem('lowedit_nick',nick)}catch(e){}$('nick').value=nick;hello()};
+$('pOut').onclick=async()=>{if(!confirm(t('logoutAsk')))return;try{await api('/api/logout',{method:'POST'})}catch(e){}['lowedit_token','lowedit_nick','lowedit_in','lowedit_avatar'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});location.reload()};
+$('pClear').onclick=async()=>{if(!confirm(t('clearAsk')))return;await api('/api/reset',{method:'POST'});location.reload()};
+$('pClose').onclick=()=>$('profile').hidden=true;$('profile').onclick=e=>{if(e.target===$('profile'))$('profile').hidden=true};
+$('avPick').onclick=()=>$('avFile').click();
+$('avFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const u=URL.createObjectURL(f),img=await new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=u}),n=256,c=document.createElement('canvas');c.width=c.height=n;const s=Math.min(img.naturalWidth,img.naturalHeight);c.getContext('2d').drawImage(img,(img.naturalWidth-s)/2,(img.naturalHeight-s)/2,s,s,0,0,n,n);URL.revokeObjectURL(u);avatar=c.toDataURL('image/jpeg',.85);try{localStorage.setItem('lowedit_avatar',avatar)}catch(x){toast(t('photoFail'))}paintAvs()}catch(x){toast(t('photoFail'))}};
+$('avDel').onclick=()=>{avatar='';try{localStorage.removeItem('lowedit_avatar')}catch(e){}paintAvs()};
+$('avBtn').onclick=async()=>{try{me=await(await api('/api/me')).json()}catch(e){}paintAvs();$('pName').textContent=me.name||nick||t('guest');
+  $('pStat').textContent=t('joined')+new Date(me.created).toLocaleDateString(lang==='ru'?'ru-RU':'en-GB')+t('edits')+me.edits;$('pVids').innerHTML='';
+  (me.videos||[]).forEach(v=>{const r=document.createElement('div'),a=document.createElement('a');r.className='row';a.textContent=v.name+' · '+(v.size/1e6).toFixed(1)+' MB';a.href='/api/v/'+v.name+'?k='+tok;a.target='_blank';r.appendChild(a);$('pVids').appendChild(r)});applyTheme();$('profile').hidden=false};
+/* ---- chat ---- */
+let hist=[],atts=[],busy=0;
+const add=(cls,txt)=>{const e=$('empty');if(e)e.remove();const d=document.createElement('div');d.className=cls;if(txt!=null)d.textContent=txt;$('feed').appendChild(d);scrollTo(0,document.body.scrollHeight);return d};
+const upd=()=>{$('send').disabled=busy||(!$('in').value.trim()&&!atts.length)||atts.some(a=>!a.name)};
+$('in').oninput=()=>{$('in').style.height='auto';$('in').style.height=$('in').scrollHeight+'px';upd()};
+$('plus').onclick=()=>$('fl').click();
+$('fl').onchange=()=>{for(const f of $('fl').files){const a={},c=document.createElement('div');c.className='chip';c.textContent=f.name+' 0%';$('atts').appendChild(c);atts.push(a);
+  const x=new XMLHttpRequest();x.open('POST','/api/upload?name='+encodeURIComponent(f.name));x.setRequestHeader('Authorization','Bearer '+tok);
+  x.upload.onprogress=e=>{c.textContent=f.name+' '+Math.round(e.loaded/e.total*100)+'%'};
+  x.onload=()=>{try{a.name=JSON.parse(x.responseText).name;c.textContent=f.name}catch(e){c.textContent=f.name+': '+t('err');atts.splice(atts.indexOf(a),1)}upd()};
+  x.onerror=()=>{c.textContent=f.name+': '+t('err');atts.splice(atts.indexOf(a),1);upd()};x.send(f)}$('fl').value='';upd()};
+$('send').onclick=async()=>{let m=$('in').value.trim();const names=atts.map(a=>a.name);if(names.length)m=(m+'\n[uploaded: '+names.join(', ')+']').trim();
+  add('msg u',m);hist.push({role:'u',text:m});$('in').value='';$('in').style.height='auto';atts=[];$('atts').innerHTML='';busy=1;upd();
+  const step=add('step',t('think')+'…');let ans=null,txt='';
+  try{const r=await api('/api/chat',{method:'POST',body:JSON.stringify({message:m,history:hist.slice(0,-1)})});
+    if(!r.ok){step.remove();add('msg a err',(await r.json()).error||t('err'))}
+    else{const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+      for(;;){const{value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});const ls=buf.split('\n');buf=ls.pop();
+        for(const l of ls){if(!l)continue;const o=JSON.parse(l);
+          if(o.t==='step')step.textContent=t(o.k)+'…';
+          if(o.t==='say'){if(!ans)ans=add('msg a','');txt+=(txt?'\n\n':'')+o.text;ans.textContent=txt;scrollTo(0,document.body.scrollHeight)}
+          if(o.t==='video'){const d=add('vid'),u='/api/v/'+o.name+'?k='+tok;d.innerHTML='<video controls playsinline preload="metadata"></video><a></a>';d.firstChild.src=u;d.lastChild.href=u+'&dl=1';d.lastChild.textContent=t('dl')+o.name}
+          if(o.t==='done')step.remove()}}}
+  }catch(e){step.remove();add('msg a err',t('lost'))}
+  if(txt)hist.push({role:'a',text:txt});busy=0;upd()};
+applyLang();paintAvs();
+if(localStorage.getItem('lowedit_in')==='1'){$('welcome').classList.add('out');hello()}
+</script></body></html>
