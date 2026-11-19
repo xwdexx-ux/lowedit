@@ -258,11 +258,6 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 body{position:fixed;left:0;right:0;width:100%}
 #aiApp{top:0;will-change:transform}
 .ai-comp{padding-top:6px}
-.msg.a{white-space:normal}
-.msg.a .txt{white-space:pre-wrap}
-.msg.a .txt b{font-weight:700}
-.msg.a .txt code{font:13.5px ui-monospace,Menlo,Consolas,monospace;background:var(--glass);border:1px solid var(--edge);border-radius:6px;padding:1px 5px}
-.msg.u .show{white-space:pre-wrap}
 .ai-box textarea.ai-in{resize:none;display:block;height:auto;line-height:1.45}
 .ai-box textarea.ai-in::placeholder{color:var(--muted)}
 .ai-send.stop svg{display:none}.ai-send.stop::after{content:"";width:12px;height:12px;border-radius:3px;background:var(--onA)}
@@ -336,12 +331,12 @@ const LANG={
 en:{welcome:'welcome to',nickPh:'Your nickname (optional)',enter:'Enter',guest:'guest',pPhoto:'Change photo',pPhotoDel:'Remove photo',pNick:'Change nickname',pOut:'Log out',pClose:'Close',pClear:'Delete files and videos',themeToLight:'Light theme',themeToDark:'Dark theme',
  hello:'lowedit',sub:'Attach your videos with +, then describe the edit, e.g. clips from video 1, music from video 2',s1:'Clips from video 1, music from video 2, cut to the beat',s2:'Remove the watermark from my video',s3:'Hi! What can you do?',
  ph:'Message lowedit',note:'lowedit AI can make mistakes.',attach:'Attach',send:'Send',stop:'Stop',menu:'Menu',newChat:'New chat',profile:'Profile',chats:'Chats',noChats:'No chats yet',delQ:'Delete this chat?',copy:'Copy',retry:'Try again',
- think:'Thinking',queue:'In queue, waiting for a free slot',probe:'Checking the file',frames:'Looking at frames',scenes:'Finding cuts',beats:'Counting beats',listen:'Listening',ffmpeg:'Rendering',
+ tkVid:'Looking at the video…|Finding the beat and rhythm…|Planning the cuts…|Setting up the edit…',tkChat:'Thinking…|Putting the answer together…',tkLong:'Still working, this is taking a bit longer than usual…',disc:'lowedit is AI and can make mistakes.',vidSave:'Save to Photos',think:'Thinking',queue:'In queue, waiting for a free slot',probe:'Checking the file',frames:'Looking at frames',scenes:'Finding cuts',beats:'Counting beats',listen:'Listening',ffmpeg:'Rendering',
  dl:'Download ',joined:'Joined ',edits:' · edits: ',newNick:'New nickname:',nickTaken:'This nickname is taken, you joined as a guest. Pick another one.',logoutAsk:'Log out? Your nickname will be freed and your files deleted.',clearAsk:'Delete uploaded files and finished videos?',lost:'Connection lost. If the render took long, check your profile: finished videos are kept.',err:'Error',photoFail:'Could not save the photo.',langName:'Русский'},
 ru:{welcome:'добро пожаловать в',nickPh:'Твой ник (необязательно)',enter:'Войти',guest:'гость',pPhoto:'Сменить фото',pPhotoDel:'Убрать фото',pNick:'Сменить ник',pOut:'Выйти',pClose:'Закрыть',pClear:'Удалить файлы и видео',themeToLight:'Светлая тема',themeToDark:'Тёмная тема',
  hello:'lowedit',sub:'Прикрепи видео через +, потом опиши эдит: например, клипы из видео 1, музыка из видео 2',s1:'Клипы из видео 1, музыка из видео 2, нарежь под биты',s2:'Убери водяной знак с моего видео',s3:'Привет! Что ты умеешь?',
  ph:'Напиши lowedit',note:'lowedit AI может ошибаться.',attach:'Прикрепить',send:'Отправить',stop:'Остановить',menu:'Меню',newChat:'Новый чат',profile:'Профиль',chats:'Чаты',noChats:'Пока нет чатов',delQ:'Удалить этот чат?',copy:'Копировать',retry:'Ещё раз',
- think:'Думаю',queue:'В очереди, жду свободное место',probe:'Смотрю файл',frames:'Смотрю кадры',scenes:'Ищу склейки',beats:'Считаю биты',listen:'Слушаю звук',ffmpeg:'Рендерю',
+ tkVid:'Смотрю видео…|Ищу бит и ритм…|Продумываю нарезку…|Настраиваю эдит…',tkChat:'Размышляю…|Формулирую ответ…',tkLong:'Всё ещё работаю, это занимает чуть дольше обычного…',disc:'lowedit — это ИИ, который может ошибаться.',vidSave:'Сохранить в Фото',think:'Думаю',queue:'В очереди, жду свободное место',probe:'Смотрю файл',frames:'Смотрю кадры',scenes:'Ищу склейки',beats:'Считаю биты',listen:'Слушаю звук',ffmpeg:'Рендерю',
  dl:'Скачать ',joined:'С нами с ',edits:' · эдитов: ',newNick:'Новый ник:',nickTaken:'Этот ник занят, ты вошёл как гость. Выбери другой.',logoutAsk:'Выйти? Ник освободится, файлы удалятся.',clearAsk:'Удалить загруженные файлы и готовые видео?',lost:'Связь оборвалась. Если рендер шёл долго, загляни в профиль: готовые видео сохраняются.',err:'Ошибка',photoFail:'Не удалось сохранить фото.',langName:'English'}};
 let lang='en';try{if(localStorage.getItem('lowedit_lang')==='ru')lang='ru'}catch(e){}
 const t=k=>(LANG[lang]&&LANG[lang][k])||LANG.en[k]||k;
@@ -402,32 +397,64 @@ $('aiMenu').onclick=drawerOpen;$('drClose').onclick=$('drScrim').onclick=drawerC
 function newChat(){if(busy)return;if(cur.msgs.length)cur=newThread();render();renderChatList();drawerClose();$('aiIn').focus()}
 $('aiNew').onclick=$('dNew').onclick=newChat;
 
-/* ---- messages ---- */
-const ICON={copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></svg>',retry:'<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 11-2.6-5.9M20 4v5h-5"/></svg>',check:'<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>'};
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const fmt=s=>esc(s).replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/`([^`\n]+)`/g,'<code>$1</code>');
+/* ---- messages: look and behaviour taken from lowend AI ---- */
+const ACT_ICONS={copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></svg>',ok:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',share:'<svg viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>',speak:'<svg viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9.5a4 4 0 0 1 0 5M18 7a7.5 7.5 0 0 1 0 10"/></svg>',stop:'<svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/></svg>',up:'<svg viewBox="0 0 24 24"><path d="M7 11v9H4v-9zM7 11l4-7a2 2 0 0 1 2 2v3h5.5a2 2 0 0 1 2 2.3l-1 6.5A2 2 0 0 1 17.5 20H7"/></svg>',down:'<svg viewBox="0 0 24 24"><path d="M17 13V4h3v9zM17 13l-4 7a2 2 0 0 1-2-2v-3H5.5a2 2 0 0 1-2-2.3l1-6.5A2 2 0 0 1 6.5 4H17"/></svg>',redo:'<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.5-5.8"/><path d="M20 4v4.5h-4.5"/></svg>'};
 const col=$('aiCol'),feed=$('aiFeed');
-const nearBottom=()=>feed.scrollHeight-feed.scrollTop-feed.clientHeight<90;
-const toBottom=()=>{feed.scrollTop=feed.scrollHeight};
+const toBottom=force=>{if(force===true||feed.scrollHeight-feed.scrollTop-feed.clientHeight<140)feed.scrollTop=feed.scrollHeight};
+function thinkSteps(text,hasVid){ // что ИИ сейчас делает: фразы меняются сами, как «Размышляю…» у Claude; на русском за каждой русской фразой идёт английская
+  const x=String(text).toLowerCase(),k=hasVid||/эдит|слайд|клип|видео|водян|edit|video|clip|watermark/.test(x)?'tkVid':'tkChat';
+  const en=LANG.en[k].split('|');if(lang!=='ru')return en;
+  const ru=LANG.ru[k].split('|'),out=[];ru.forEach((x,i)=>{out.push(x);if(en[i])out.push(en[i])});return out}
+function thinkEl(first,steps){ // строка хода работы: точки слева и переливающийся текст; «N / M» рисует полоску прогресса
+  const d=document.createElement('div');d.className='msg a think';d.setAttribute('role','status');d.innerHTML='<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><b></b><span class="pbar" hidden><i></i></span>';
+  const b=d.querySelector('b'),bar=d.querySelector('.pbar');let i=0,timer=0,sw=0,lt=0;b.textContent=steps&&steps.length?steps[0]:first;
+  const put=x=>{clearTimeout(sw);b.style.opacity=0;sw=setTimeout(()=>{b.textContent=x;b.style.opacity=1},180)};
+  if(steps&&steps.length>1)timer=setInterval(()=>{i=Math.min(i+1,steps.length-1);put(steps[i]);if(i===steps.length-1)clearInterval(timer)},2400);
+  if(steps)lt=setTimeout(()=>{if(d.isConnected)d.set(t('tkLong'))},25000);
+  d.set=x=>{clearInterval(timer);const m=/(\d+)\s*\/\s*(\d+)/.exec(String(x));
+    if(m&&+m[2]>0){clearTimeout(sw);b.style.opacity=1;b.textContent=x;bar.hidden=false;bar.firstChild.style.width=Math.min(100,+m[1]/+m[2]*100)+'%'}
+    else{bar.hidden=true;put(x)}};
+  const rm=d.remove.bind(d);d.remove=()=>{clearInterval(timer);clearTimeout(sw);clearTimeout(lt);rm()};return d}
 function tile(a){const d=document.createElement('div');if(a.src){d.className='att';const i=document.createElement('img');i.src=a.src;i.alt='';d.appendChild(i)}else{d.className='att file';d.innerHTML='<b></b><span class="n"></span>';d.firstChild.textContent=(a.k||'file').toUpperCase().slice(0,5);d.lastChild.textContent=a.n||''}if(a.num){const nb=document.createElement('span');nb.className='nb';nb.textContent=a.num;d.appendChild(nb)}return d}
 /* номера видео считаются внутри чата: так их и называет человек, и так их видит ИИ */
 const chatFiles=()=>{const o=[];cur.msgs.forEach(m=>(m.atts||[]).forEach(a=>{if(a.name&&!o.includes(a.name))o.push(a.name)}));return o};
 function drawUser(m){const d=document.createElement('div');d.className='msg u';
-  if(m.atts&&m.atts.length){const w=document.createElement('div');w.className='ai-thumbs';const cf=chatFiles();m.atts.forEach(a=>w.appendChild(tile({...a,num:cf.indexOf(a.name)+1||''})));d.appendChild(w)}
-  const s=m.show!==undefined?m.show:m.text;if(s){const x=document.createElement('div');x.className='show';x.textContent=s;d.appendChild(x)}col.appendChild(d)}
-function videoBlock(name){const u='/api/v/'+name+'?k='+tok,w=document.createElement('div');w.className='ai-vid';w.innerHTML='<video controls playsinline preload="metadata"></video><div class="ai-tags"><a class="ai-tag" download></a></div>';w.firstChild.src=u;const a=w.querySelector('a');a.href=u+'&dl=1';a.textContent=t('dl')+name;return w}
-function mkA(){const el=document.createElement('div');el.className='msg a';const tx=document.createElement('div');tx.className='txt';tx.hidden=true;const vs=document.createElement('div');el.append(tx,vs);return{el,tx,vs}}
-function addActs(A,isLast){const row=document.createElement('div');row.className='ai-acts';
-  const cp=document.createElement('button');cp.setAttribute('aria-label',t('copy'));cp.innerHTML=ICON.copy;cp.onclick=async()=>{try{await navigator.clipboard.writeText(A.tx.textContent);cp.innerHTML=ICON.check;cp.classList.add('on');setTimeout(()=>{cp.innerHTML=ICON.copy;cp.classList.remove('on')},1400)}catch(e){}};
-  row.appendChild(cp);
-  if(isLast){const rt=document.createElement('button');rt.setAttribute('aria-label',t('retry'));rt.innerHTML=ICON.retry;rt.onclick=retry;row.appendChild(rt)}
-  A.el.appendChild(row);return row}
-function drawAssist(m,isLast){const A=mkA();if(m.text){A.tx.hidden=false;A.tx.innerHTML=fmt(m.text);if(m.err)A.el.classList.add('err')}(m.videos||[]).forEach(n=>A.vs.appendChild(videoBlock(n)));if(m.text&&!m.err)addActs(A,isLast);col.appendChild(A.el)}
+  if(m.atts&&m.atts.length){const w=document.createElement('div');w.className='ai-thumbs';if(!m.show)w.style.marginBottom='0';const cf=chatFiles();m.atts.forEach(a=>w.appendChild(tile({...a,num:cf.indexOf(a.name)+1||''})));d.appendChild(w)}
+  if(m.show)d.appendChild(document.createTextNode(m.show));col.appendChild(d)}
+function videoBlock(name){const u='/api/v/'+name+'?k='+tok,w=document.createElement('div');w.className='ai-vid';
+  const v=document.createElement('video');v.src=u;v.controls=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='metadata';v.addEventListener('loadedmetadata',()=>toBottom(true),{once:true});w.appendChild(v);
+  const row=document.createElement('div');row.className='ai-tags';
+  try{if(navigator.canShare&&navigator.canShare({files:[new File([''],'a.mp4',{type:'video/mp4'})]})){const sv=document.createElement('button');sv.className='ai-tag';sv.textContent=t('vidSave');
+    sv.onclick=async()=>{try{const bl=await(await fetch(u)).blob();await navigator.share({files:[new File([bl],name.replace(/^\w+?_/,''),{type:'video/mp4'})]})}catch(e){}};row.appendChild(sv)}}catch(e){}
+  const a=document.createElement('a');a.href=u+'&dl=1';a.download=name;a.className='ai-tag';a.textContent=t('dl')+name.replace(/^\w+?_/,'');row.appendChild(a);w.appendChild(row);return w}
+function refreshActs(){ // подпись «может ошибаться» и «ещё раз» только у последнего ответа ИИ
+  const all=[...col.querySelectorAll('.ai-acts')].filter(a=>!a.parentNode.hidden),last=all[all.length-1];
+  col.querySelectorAll('.ai-disc').forEach(x=>x.style.display=x.parentNode.querySelector('.ai-acts')===last?'':'none');
+  col.querySelectorAll('.ai-acts .rg').forEach(x=>x.style.display=x.parentNode===last?'':'none')}
+function actsEl(m){
+  const w=document.createElement('div'),f=document.createElement('div');w.className='ai-acts';f.className='ai-disc';f.textContent=t('disc');
+  const mk=(ic,label,fn,cls)=>{const b=document.createElement('button');b.type='button';b.innerHTML=ACT_ICONS[ic];b.setAttribute('aria-label',label);if(cls)b.className=cls;b.onclick=()=>fn(b);w.appendChild(b);return b};
+  const flash=(b,ic)=>{b.innerHTML=ACT_ICONS.ok;setTimeout(()=>{b.innerHTML=ACT_ICONS[ic]},1500)};
+  const copyText=async x=>{try{await navigator.clipboard.writeText(x);return true}catch(e){const a=document.createElement('textarea');a.value=x;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch(e2){}a.remove();return ok}};
+  mk('copy','Copy',async b=>{if(await copyText(m.text))flash(b,'copy')});
+  mk('share','Share',async b=>{try{if(navigator.share)await navigator.share({text:m.text});else if(await copyText(m.text))flash(b,'share')}catch(e){}});
+  let speaking=false;
+  mk('speak','Read aloud',b=>{if(!('speechSynthesis' in window))return;if(speaking){speechSynthesis.cancel();return}
+    speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(m.text);u.lang=/[а-яё]/i.test(m.text)?'ru-RU':'en-US';
+    const end=()=>{speaking=false;b.innerHTML=ACT_ICONS.speak};u.onend=end;u.onerror=end;speaking=true;b.innerHTML=ACT_ICONS.stop;speechSynthesis.speak(u)});
+  const up=mk('up','Good answer',()=>vote('up')),down=mk('down','Bad answer',()=>vote('down'));
+  const paint=()=>{up.classList.toggle('on',m.fb==='up');down.classList.toggle('on',m.fb==='down')};
+  function vote(v){m.fb=m.fb===v?'':v;paint();if(cur.msgs.includes(m))saveThread()}
+  paint();
+  mk('redo','Regenerate',()=>{if(busy||cur.msgs[cur.msgs.length-1]!==m)return;retry()},'rg');
+  const box=document.createElement('div');box.append(w,f);return box}
+function msgA(m){const d=document.createElement('div');d.className='msg a'+(m.err?' err':'');const tx=document.createElement('span');tx.textContent=m.text||'';d.appendChild(tx);
+  (m.videos||[]).forEach(n=>d.appendChild(videoBlock(n)));if(m.text&&!m.err&&m.role==='a')d.appendChild(actsEl(m));return d}
 function render(){col.innerHTML='';
   if(!cur.msgs.length){const e=document.createElement('div');e.className='ai-empty';e.innerHTML='<h1></h1><p></p><div class="ai-sug"></div>';e.querySelector('h1').textContent=t('hello');e.querySelector('p').textContent=t('sub');
     ['s1','s2','s3'].forEach(k=>{const b=document.createElement('button');b.textContent=t(k);b.onclick=()=>{$('aiIn').value=t(k);submit()};e.querySelector('.ai-sug').appendChild(b)});col.appendChild(e)}
-  else cur.msgs.forEach((m,i)=>m.role==='u'?drawUser(m):drawAssist(m,i===cur.msgs.length-1));
-  toBottom()}
+  else cur.msgs.forEach(m=>m.role==='u'?drawUser(m):col.appendChild(msgA(m)));
+  refreshActs();toBottom(true)}
 
 /* ---- composer ---- */
 const inp=$('aiIn');
@@ -451,30 +478,35 @@ function submit(){if(busy)return;const text=inp.value.trim(),ready=atts.filter(a
   const um={role:'u',text:text||(lang==='ru'?'Посмотри видео':'Take a look at the videos'),show:text,atts:ready.map(a=>({n:a.orig,k:a.kind,name:a.name}))};
   atts=[];redrawAtts();inp.value='';inp.style.height='auto';go(um)}
 function retry(){if(busy)return;while(cur.msgs.length&&cur.msgs[cur.msgs.length-1].role==='a')cur.msgs.pop();const u=cur.msgs.pop();if(!u)return;go(u)}
+function reveal(tx){ // слова плавно проявляются по очереди, как в Claude
+  const q=[];let tm=0,idleCb=null;
+  const pump=()=>{tm=0;const per=Math.max(2,Math.ceil(q.length/60));for(let k=0;k<per&&q.length;k++){const w=document.createElement('span');w.className='ai-w';w.textContent=q.shift();tx.appendChild(w)}toBottom();if(q.length)tm=setTimeout(pump,18);else if(idleCb){const f=idleCb;idleCb=null;f()}};
+  return{push(s){q.push(...String(s).split(/(\s+)/).filter(Boolean));if(!tm)tm=setTimeout(pump,0)},whenIdle(f){if(!q.length&&!tm)f();else idleCb=f}}}
 async function go(um){
   const hist=cur.msgs.map(x=>({role:x.role,text:x.text||''}));
   cur.msgs.push(um);render();busy=true;upd();
-  const th=document.createElement('div');th.className='msg a think';th.setAttribute('role','status');th.innerHTML='<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><b></b>';
-  const lab=th.querySelector('b');lab.textContent=t('think')+'…';col.appendChild(th);toBottom();
-  let A=null,txt='',vids=[],newPara=false,failed='';ctl=new AbortController();
-  const ensureA=()=>{if(!A){A=mkA();col.insertBefore(A.el,th)}return A};
+  let th=thinkEl('',thinkSteps(um.text,(um.atts||[]).length>0));col.appendChild(th);toBottom(true);
+  let A=null,R=null,txt='',vids=[],newPara=false,failed='';ctl=new AbortController();
+  const dropTh=()=>{if(th){th.remove();th=null}};
+  const showTh=x=>{if(!th){th=thinkEl(x,null);col.appendChild(th)}else th.set(x);toBottom()};
+  const ensureA=()=>{if(!A){const d=document.createElement('div');d.className='msg a';const tx=document.createElement('span');d.appendChild(tx);col.appendChild(d);A={d,tx};R=reveal(tx)}return A};
   try{
     const r=await api('/api/chat',{method:'POST',signal:ctl.signal,body:JSON.stringify({message:um.text,history:hist,files:chatFiles()})});
     if(!r.ok){let e=t('err');try{e=(await r.json()).error||e}catch(x){}failed=e}
     else{const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
       for(;;){const{value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});const ls=buf.split('\n');buf=ls.pop();
-        for(const l of ls){if(!l)continue;let o;try{o=JSON.parse(l)}catch(x){continue}const nb=nearBottom();
-          if(o.t==='delta'){const a=ensureA();if(newPara&&txt){txt+='\n\n';newPara=false}txt+=o.text;a.tx.hidden=false;a.tx.innerHTML=fmt(txt);th.hidden=true}
-          else if(o.t==='say'){const a=ensureA();txt+=(txt?'\n\n':'')+o.text;a.tx.hidden=false;a.tx.innerHTML=fmt(txt)}
+        for(const l of ls){if(!l)continue;let o;try{o=JSON.parse(l)}catch(x){continue}
+          if(o.t==='delta'||o.t==='say'){dropTh();ensureA();let x=o.text;if(newPara&&txt){x='\n\n'+x;newPara=false}else if(o.t==='say'&&txt)x='\n\n'+x;txt+=x;R.push(x)}
           else if(o.t==='turn')newPara=true;
-          else if(o.t==='step'){lab.textContent=t(o.k)+'…';th.hidden=false}
-          else if(o.t==='video'){vids.push(o.name);ensureA().vs.appendChild(videoBlock(o.name))}
-          else if(o.t==='done'){th.hidden=true}
-          if(nb)toBottom()}}}
+          else if(o.t==='step')showTh(t(o.k)+'…');
+          else if(o.t==='progress')showTh(t('ffmpeg')+'… '+o.done+' / '+o.total+' '+(lang==='ru'?'с':'s'));
+          else if(o.t==='video'){dropTh();vids.push(o.name);ensureA().d.appendChild(videoBlock(o.name));toBottom(true)}
+          else if(o.t==='done')dropTh()}}}
   }catch(e){if(!(e&&e.name==='AbortError'))failed=t('lost')}
-  th.remove();ctl=null;busy=false;
-  if(failed&&!txt&&!vids.length){saveThread();drawAssist({role:'a',text:failed,err:true},false)}
-  else if(txt||vids.length){cur.msgs.push({role:'a',text:txt,videos:vids});saveThread();render()}
+  dropTh();ctl=null;busy=false;
+  if(failed&&!txt&&!vids.length){saveThread();col.appendChild(msgA({role:'a',text:failed,err:true}))}
+  else if(txt||vids.length){const m={role:'a',text:txt,videos:vids};cur.msgs.push(m);saveThread();
+    if(A&&txt)R.whenIdle(()=>{A.d.appendChild(actsEl(m));refreshActs();toBottom()})}
   else saveThread();
   upd();toBottom()}
 render();applyLang();paintAvs();
